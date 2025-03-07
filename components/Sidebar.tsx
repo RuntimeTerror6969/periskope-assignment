@@ -114,48 +114,55 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
     if (!currentUser) return;
   
     const messagesChannel = supabase
-      .channel('messages-all')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        (payload) => {
-          const newMessage = payload.new as Message;
-  
-          setChats((prevChats) => {
-            const otherUserId =
-              newMessage.sender_id === currentUser.id
-                ? newMessage.receiver_id
-                : newMessage.sender_id;
-  
-            const chatIndex = prevChats.findIndex((chat) => chat.id === otherUserId);
-            if (chatIndex === -1) {
-              fetchUsersAndChats();
-              return prevChats;
-            }
-  
-            const updatedChats = [...prevChats];
-            const chat = updatedChats[chatIndex];
-            updatedChats[chatIndex] = {
-              ...chat,
-              lastMessage: newMessage.content,
-              timestamp: newMessage.timestamp,
-              unreadCount:
-                newMessage.receiver_id === currentUser.id && !newMessage.read
-                  ? chat.unreadCount + 1
-                  : chat.unreadCount,
-            };
-  
-            return updatedChats.sort((a, b) =>
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            );
-          });
-        }
-      )
-      .subscribe();
+  .channel(`messages-user-${currentUser.id}`) // Unique channel per user
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`, // Filter for current user
+    },
+    (payload) => {
+      const newMessage = payload.new as Message;
+
+      // Only process if the current user is sender or receiver
+      if (
+        newMessage.sender_id === currentUser.id ||
+        newMessage.receiver_id === currentUser.id
+      ) {
+        setChats((prevChats) => {
+          const otherUserId =
+            newMessage.sender_id === currentUser.id
+              ? newMessage.receiver_id
+              : newMessage.sender_id;
+
+          const chatIndex = prevChats.findIndex((chat) => chat.id === otherUserId);
+          if (chatIndex === -1) {
+            fetchUsersAndChats();
+            return prevChats;
+          }
+
+          const updatedChats = [...prevChats];
+          const chat = updatedChats[chatIndex];
+          updatedChats[chatIndex] = {
+            ...chat,
+            lastMessage: newMessage.content,
+            timestamp: newMessage.timestamp,
+            unreadCount:
+              newMessage.receiver_id === currentUser.id && !newMessage.read
+                ? chat.unreadCount + 1
+                : chat.unreadCount,
+          };
+
+          return updatedChats.sort((a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+        });
+      }
+    }
+  )
+  .subscribe();
   
     const usersChannel = supabase
       .channel('users-changes')

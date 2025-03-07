@@ -16,23 +16,17 @@ export default function Layout() {
   const router = useRouter();
 
   useEffect(() => {
-    // Handle responsive state
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 768);
     };
 
-    // Set initial state
     handleResize();
-
-    // Add event listener
     window.addEventListener('resize', handleResize);
 
-    // Clean up
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
-    // In mobile view, selecting a chat should hide the chat list
     if (isMobileView && selectedChatId) {
       setShowChatList(false);
     }
@@ -91,12 +85,9 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-100">
-      {/* Mobile/Desktop layout handling */}
       {isMobileView ? (
-        // Mobile layout (full width, toggle between views)
         <>
           {showChatList ? (
-            // Show chat list on mobile
             <div className="w-full h-full">
               <Sidebar 
                 selectedChatId={selectedChatId}
@@ -105,7 +96,6 @@ export default function Layout() {
               />
             </div>
           ) : (
-            // Show chat area on mobile
             <div className="w-full h-full">
               <MainChatArea
                 selectedChatId={selectedChatId}
@@ -117,10 +107,9 @@ export default function Layout() {
           )}
         </>
       ) : (
-        // Desktop layout (side by side)
         <>
-          {/* Sidebar with fluid width */}
-          <div className="w-1/3 max-w-sm h-full">
+          {/* Sidebar with 40% width */}
+          <div className="w-2/5 h-full overflow-x-hidden">
             <Sidebar 
               selectedChatId={selectedChatId}
               onSelectChat={handleSelectChat}
@@ -128,8 +117,8 @@ export default function Layout() {
             />
           </div>
           
-          {/* MainChatArea takes remaining space */}
-          <div className="flex-1 h-full">
+          {/* MainChatArea with 60% width */}
+          <div className="w-3/5 h-full">
             <MainChatArea
               selectedChatId={selectedChatId}
               selectedChatName={selectedChatName}

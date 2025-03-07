@@ -1,5 +1,3 @@
-'use client';
-
 import { Chat } from '@/types';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -65,8 +63,8 @@ export default function ChatListItem({ chat, isSelected, onClick }: ChatListItem
         </div>
 
         <div className="flex justify-between items-center">
-          <div className="flex-1 truncate pr-2">
-            <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
+          <div className="flex-1 min-w-0 pr-2">
+            <p className="text-sm text-gray-600 truncate break-words">{chat.lastMessage}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {chat.label && (

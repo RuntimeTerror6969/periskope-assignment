@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faFaceSmile, 
   faPaperPlane,
-  faMagnifyingGlass, // Added for search
+  faMagnifyingGlass, 
   faArrowLeft,
   faAt,
   faMicrophone,
@@ -28,8 +28,8 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [otherUser, setOtherUser] = useState<User | null>(null);
-  const [showSearch, setShowSearch] = useState(false); // Toggle search input
-  const [searchQuery, setSearchQuery] = useState(''); // Search term
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -163,7 +163,7 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 overflow-x-hidden">
       {/* Chat header */}
       <div className="py-2 px-3 border-b flex justify-between items-center bg-white shadow-sm">
         <div className="flex items-center gap-3">
@@ -239,8 +239,8 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
         </div>
       )}
 
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+      {/* Messages area with overflow control */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 bg-gray-50 w-full">
         {selectedChatId ? (
           <>
             {groupedMessages.length > 0 ? (

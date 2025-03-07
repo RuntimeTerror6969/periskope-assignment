@@ -1,7 +1,7 @@
 import { Message as MessageType } from '@/types';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faCheckDouble } from '@fortawesome/free-solid-svg-icons';
+import { faCheckDouble } from '@fortawesome/free-solid-svg-icons';
 
 interface MessageGroupProps {
   messages: MessageType[];
@@ -11,16 +11,15 @@ interface MessageGroupProps {
 
 export default function MessageGroup({ messages, isSent, senderName }: MessageGroupProps) {
   return (
-    <div className={`flex flex-col mb-4 ${isSent ? 'items-end' : 'items-start'}`}>
+    <div className={`flex flex-col mb-4 w-full ${isSent ? 'items-end' : 'items-start'}`}>
       {messages.map((message, index) => {
-        const formattedTime = message.timestamp 
+        const formattedTime = message.timestamp
           ? format(new Date(message.timestamp), 'HH:mm')
           : '';
-
         return (
           <div
             key={index}
-            className={`max-w-[75%] mb-1 ${
+            className={`w-fit max-w-[70%] mb-1 ${
               isSent
                 ? 'bg-green-500 text-white rounded-md'
                 : 'bg-white text-gray-800 rounded-md border border-gray-200'
@@ -32,7 +31,7 @@ export default function MessageGroup({ messages, isSent, senderName }: MessageGr
                 {senderName}
               </div>
             )}
-            
+           
             <div className="flex flex-col">
               <span className="break-words text-sm mb-1">{message.content}</span>
               <div className={`flex items-center justify-end space-x-1 text-xs ${isSent ? 'text-green-100' : 'text-gray-500'}`}>

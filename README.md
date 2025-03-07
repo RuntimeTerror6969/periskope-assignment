@@ -49,7 +49,7 @@ To run this project locally, follow these steps:
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/RuntimeTerror6969/periskope-assignment.git
-   cd chat-application
+   cd periskope-assignment
    ```
 
 2. **Install Dependencies**
@@ -115,10 +115,10 @@ To run this project locally, follow these steps:
 This project is part of a hiring assignment and is not open for public contributions. However, I welcome feedback! If you’re a recruiter or evaluator, feel free to suggest improvements or discuss the codebase with me.
 
 ## License
-This project is for demonstration purposes only and is not licensed for public use. All rights reserved by [Your Name].
+This project is for demonstration purposes only and is not licensed for public use. All rights reserved.
 
 ## Contact
-- **GitHub**: [your-username](https://github.com/RuntimeTerror6969)
+- **GitHub**: [RuntimeTerror6969](https://github.com/RuntimeTerror6969)
 - **Email**: [aadarsh.22.2003@gmail.com]
 - **LinkedIn**: [https://www.linkedin.com/in/aadarsh-397461227/](https://www.linkedin.com/in/aadarsh-397461227/)
 

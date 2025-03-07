@@ -31,7 +31,7 @@ export default function ChatListItem({ chat, isSelected, onClick }: ChatListItem
 
   return (
     <div
-      className={`flex py-3 px-4 border-b cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${
+      className={`flex py-3 px-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${
         isSelected ? 'bg-green-100' : ''
       }`}
       onClick={onClick}

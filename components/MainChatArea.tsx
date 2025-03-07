@@ -7,10 +7,11 @@ import {
   faPaperPlane,
   faMagnifyingGlass, 
   faArrowLeft,
-  faAt,
   faMicrophone,
-  faImage,
-  faCircle
+  faPaperclip, // Added for attaching docs
+  faClock, // Added for clock icon
+  faHistory, // Added for history (clock with anticlockwise arrow)
+  faFileAlt, // Added for Google Doc type icon
 } from '@fortawesome/free-solid-svg-icons';
 import { Message as MessageType, User } from '@/types';
 import MessageGroup from './MessageGroup';
@@ -165,7 +166,7 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
   return (
     <div className="h-full flex flex-col bg-gray-50 overflow-x-hidden">
       {/* Chat header */}
-      <div className="py-2 px-3 border-b flex justify-between items-center bg-white shadow-sm">
+      <div className="py-2 px-3 flex justify-between items-center bg-white shadow-sm">
         <div className="flex items-center gap-3">
           {onBackClick && (
             <button 
@@ -215,7 +216,7 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
 
       {/* Search input (shown when search is active) */}
       {showSearch && (
-        <div className="p-2 bg-white border-b">
+        <div className="p-2 bg-white">
           <div className="flex items-center bg-gray-100 rounded-md px-3 py-2">
             <FontAwesomeIcon icon={faMagnifyingGlass} className="text-gray-400 text-sm mr-2" />
             <input
@@ -267,7 +268,7 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
       </div>
 
       {/* Input area */}
-      <div className="p-2 border-t bg-white">
+      <div className="p-2 bg-white">
         <form onSubmit={handleSendMessage}>
           <div className="flex w-full mb-2">
             <input
@@ -287,24 +288,38 @@ export default function MainChatArea({ selectedChatId, selectedChatName, current
             </button>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex space-x-8 text-gray-500">
+            <div className="flex space-x-4 text-gray-500">
+              <button type="button" className="hover:text-gray-700">
+                <FontAwesomeIcon icon={faPaperclip} />
+              </button>
               <button type="button" className="hover:text-gray-700">
                 <FontAwesomeIcon icon={faFaceSmile} />
               </button>
               <button type="button" className="hover:text-gray-700">
-                <FontAwesomeIcon icon={faAt} />
+                <FontAwesomeIcon icon={faClock} />
               </button>
               <button type="button" className="hover:text-gray-700">
-                <FontAwesomeIcon icon={faImage} />
+                <FontAwesomeIcon icon={faHistory} />
+              </button>
+              <button type="button" className="hover:text-gray-700">
+                <FontAwesomeIcon icon={faFileAlt} />
               </button>
               <button type="button" className="hover:text-gray-700">
                 <FontAwesomeIcon icon={faMicrophone} />
               </button>
             </div>
-            <div className="flex items-center text-xs text-green-500 font-medium">
-              <FontAwesomeIcon icon={faCircle} className="text-green-500 mr-1" size="xs" />
-              <FontAwesomeIcon icon={faCircle} className="text-green-500 mr-1" size="xs" />
-              <span>Periscope</span>
+            <div className="flex items-center text-xs text-green-500 font-medium mr-4">
+              <div className="relative w-6 h-6 mr-1.5">
+                <Image
+                  src="/periskope_logo.png"
+                  alt="Periskope Logo"
+                  width={64}
+                  height={64}
+                  className="absolute inset-0 w-full h-full"
+                  style={{ objectFit: 'contain' }}
+                />
+              </div>
+              <span>Periskope</span>
             </div>
           </div>
         </form>

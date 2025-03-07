@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faEllipsisVertical,
-faBell, faQuestionCircle,
+  faBell, faQuestionCircle,
   faFilter, faXmark, faHome, faUsers, faList, faCog, faSearch,
-   faPhone, faVideo, faMessage, faFileLines,
-  faImage, faPlus, faAngleDown
+  faPhone, faVideo, faMessage, faFileLines,
+  faImage, faPlus, faAngleDown, faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons';
 import ChatListItem from './ChatListItem';
 import { supabase } from '@/lib/supabase';
 import { Chat, User, Message } from '@/types';
+import { useRouter } from 'next/navigation';
 
 interface SidebarProps {
   selectedChatId: string | null;
@@ -26,22 +27,36 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileView, setIsMobileView] = useState<boolean>(false);
   const [showNavMenu, setShowNavMenu] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // Handle responsive state
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 768);
     };
 
-    // Set initial state
     handleResize();
-
-    // Add event listener
     window.addEventListener('resize', handleResize);
 
-    // Clean up
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowSettingsMenu(false);
+      }
+    };
+
+    if (showSettingsMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSettingsMenu]);
 
   const fetchUsersAndChats = async () => {
     if (!currentUser) return;
@@ -166,10 +181,20 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
       )
     : chats;
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="h-full flex w-full">
       {/* Vertical navigation sidebar */}
-      <div className={`bg-white ${isMobileView && !showNavMenu ? 'hidden' : 'w-16'} flex flex-col items-center py-4 border-r flex-shrink-0`}>
+      <div className={`bg-white ${isMobileView && !showNavMenu ? 'hidden' : 'w-16'} flex flex-col items-center py-4 flex-shrink-0`}>
         <div className="flex flex-col space-y-6 items-center">
           <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full">
             <FontAwesomeIcon icon={faHome} className="text-lg" />
@@ -196,10 +221,24 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
             </div>
           </button>
         </div>
-        <div className="mt-auto flex flex-col space-y-6 items-center">
-          <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full">
+        <div className="mt-auto flex flex-col space-y-6 items-center relative" ref={settingsRef}>
+          <button 
+            className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full"
+            onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+          >
             <FontAwesomeIcon icon={faCog} className="text-lg" />
           </button>
+          {showSettingsMenu && (
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-md shadow-lg w-32 z-10">
+              <button
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={handleSignOut}
+              >
+                <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
+                Sign Out
+              </button>
+            </div>
+          )}
           <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full">
             <FontAwesomeIcon icon={faQuestionCircle} className="text-lg" />
           </button>
@@ -209,7 +248,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
       {/* Chat list sidebar */}
       <div className="h-full flex flex-col bg-gray-100 flex-1 relative">
         {/* Top header */}
-        <div className="p-4 flex justify-between items-center border-b bg-white">
+        <div className="p-4 flex justify-between items-center bg-white">
           <div className="flex items-center gap-2">
             {isMobileView && (
               <button 
@@ -219,7 +258,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
                 <FontAwesomeIcon icon={faList} />
               </button>
             )}
-            <span className="text-sm font-medium">Messages</span>
+            <span className="text-sm font-medium">Chats</span>
             <FontAwesomeIcon icon={faAngleDown} className="text-gray-500 text-xs" />
           </div>
           <div className="flex items-center gap-3">
@@ -230,7 +269,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
         </div>
 
         {/* Filter section */}
-        <div className="p-3 flex flex-wrap gap-2 border-b bg-gray-50">
+        <div className="p-3 flex flex-wrap gap-2 bg-gray-50">
           <button className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <span>Custom Filter</span>
             {isFiltered && <FontAwesomeIcon icon={faFilter} className="text-xs" />}
@@ -254,7 +293,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
 
         {/* Search input */}
         {showSearch && (
-          <div className="p-2 bg-white border-b">
+          <div className="p-2 bg-white">
             <div className="flex items-center bg-gray-100 rounded-md px-3 py-2">
               <FontAwesomeIcon icon={faSearch} className="text-gray-400 text-sm mr-2" />
               <input 
@@ -304,7 +343,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
         </div>
 
         {/* User profile */}
-        <div className="p-3 border-t flex justify-between items-center bg-white">
+        <div className="p-3 flex justify-between items-center bg-white">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
               <span className="text-gray-600 text-xs font-medium">

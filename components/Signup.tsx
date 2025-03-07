@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { AuthError } from '@supabase/supabase-js';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -17,7 +18,6 @@ export default function Signup() {
     setError(null);
 
     try {
-      // Sign up with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -26,8 +26,7 @@ export default function Signup() {
       if (error) throw error;
 
       if (data.user) {
-        const userName = email.split('@')[0]; // Simple username from email
-        // Upsert into users table with Auth-generated ID
+        const userName = email.split('@')[0];
         const { error: upsertError } = await supabase
           .from('users')
           .upsert(
@@ -40,8 +39,12 @@ export default function Signup() {
         alert('Signup successful! Please log in.');
         router.push('/login');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign up');
+    } catch (err: unknown) { // Changed to 'unknown'
+      if (err instanceof AuthError) {
+        setError(err.message || 'Failed to sign up');
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }

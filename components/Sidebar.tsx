@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faComment, faHouse, faCamera, faMagnifyingGlass, faEllipsisVertical,
-  faPen, faUser, faBell, faBookmark, faGear, faQuestionCircle,
+  faEllipsisVertical,
+faBell, faQuestionCircle,
   faFilter, faXmark, faHome, faUsers, faList, faCog, faSearch,
-  faCircle, faCheck, faPhone, faVideo, faMessage, faFileLines,
+   faPhone, faVideo, faMessage, faFileLines,
   faImage, faPlus, faAngleDown
 } from '@fortawesome/free-solid-svg-icons';
 import ChatListItem from './ChatListItem';

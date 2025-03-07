@@ -1,6 +1,5 @@
 'use client';
 
-import { format } from 'date-fns';
 import { Chat } from '@/types';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

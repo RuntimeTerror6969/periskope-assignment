@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { AuthError } from '@supabase/supabase-js';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,6 @@ export default function Login() {
 
       if (data.user) {
         const userName = email.split('@')[0];
-        // Upsert user into users table
         const { error: upsertError } = await supabase
           .from('users')
           .upsert(
@@ -39,8 +39,12 @@ export default function Login() {
         router.push('/');
         router.refresh();
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to login');
+    } catch (err: unknown) { // Changed to 'unknown'
+      if (err instanceof AuthError) {
+        setError(err.message || 'Failed to login');
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }

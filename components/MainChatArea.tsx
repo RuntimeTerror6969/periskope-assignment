@@ -3,9 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faRotateRight, 
-  faPaperclip, 
-  faEllipsisVertical, 
   faFaceSmile, 
   faPaperPlane,
   faMagnifyingGlass, // Added for search

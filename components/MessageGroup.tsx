@@ -1,7 +1,7 @@
 import { Message as MessageType } from '@/types';
 import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faCheckDouble } from '@fortawesome/free-solid-svg-icons';
+import {  faCheckDouble } from '@fortawesome/free-solid-svg-icons';
 
 interface MessageGroupProps {
   messages: MessageType[];

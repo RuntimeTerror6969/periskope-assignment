@@ -3,11 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faEllipsisVertical,
-  faBell, faQuestionCircle,
-  faFilter, faXmark, faHome, faUsers, faList, faCog, faSearch,
-  faPhone, faVideo, faMessage, faFileLines,
-  faImage, faPlus, faAngleDown, faSignOutAlt
+  faEllipsisVertical, faBell, faQuestionCircle, faFilter, faXmark, faHome, 
+  faUsers, faList, faCog, faSearch, faPhone, faVideo, faMessage, faFileLines, 
+  faImage, faPlus, faAngleDown, faSignOutAlt 
 } from '@fortawesome/free-solid-svg-icons';
 import ChatListItem from './ChatListItem';
 import { supabase } from '@/lib/supabase';
@@ -32,13 +30,9 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
   const router = useRouter();
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 768);
-    };
-
+    const handleResize = () => setIsMobileView(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -48,41 +42,30 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
         setShowSettingsMenu(false);
       }
     };
-
-    if (showSettingsMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (showSettingsMenu) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSettingsMenu]);
 
   const fetchUsersAndChats = async () => {
     if (!currentUser) return;
-  
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
       .neq('id', currentUser.id)
       .order('name', { ascending: true });
-  
     if (usersError) {
       console.error('Error fetching users:', usersError);
       return;
     }
-  
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
       .select('*')
       .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
       .order('timestamp', { ascending: false });
-  
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
       return;
     }
-  
     const chatList: Chat[] = users.map((user) => {
       const userMessages = messages?.filter(
         (m) =>
@@ -93,7 +76,6 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
       const unreadCount = userMessages.filter(
         (m) => m.sender_id === user.id && m.receiver_id === currentUser.id && !m.read
       ).length;
-  
       return {
         id: user.id,
         name: user.name,
@@ -103,75 +85,65 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
         unreadCount,
       };
     });
-  
     chatList.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     setChats(chatList);
   };
 
   useEffect(() => {
     fetchUsersAndChats();
-    
     if (!currentUser) return;
   
-    const messagesChannel = supabase
-  .channel(`messages-user-${currentUser.id}`) // Unique channel per user
-  .on(
-    'postgres_changes',
-    {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-      filter: `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`, // Filter for current user
-    },
-    (payload) => {
+    const handleMessageUpdate = (payload: any, isReceiver: boolean) => {
       const newMessage = payload.new as Message;
-
-      // Only process if the current user is sender or receiver
-      if (
-        newMessage.sender_id === currentUser.id ||
-        newMessage.receiver_id === currentUser.id
-      ) {
-        setChats((prevChats) => {
-          const otherUserId =
-            newMessage.sender_id === currentUser.id
-              ? newMessage.receiver_id
-              : newMessage.sender_id;
-
-          const chatIndex = prevChats.findIndex((chat) => chat.id === otherUserId);
-          if (chatIndex === -1) {
-            fetchUsersAndChats();
-            return prevChats;
-          }
-
-          const updatedChats = [...prevChats];
-          const chat = updatedChats[chatIndex];
-          updatedChats[chatIndex] = {
-            ...chat,
-            lastMessage: newMessage.content,
-            timestamp: newMessage.timestamp,
-            unreadCount:
-              newMessage.receiver_id === currentUser.id && !newMessage.read
-                ? chat.unreadCount + 1
-                : chat.unreadCount,
-          };
-
-          return updatedChats.sort((a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          );
-        });
-      }
-    }
-  )
-  .subscribe();
+      const otherUserId = isReceiver ? newMessage.sender_id : newMessage.receiver_id;
+      setChats((prevChats) => {
+        const chatIndex = prevChats.findIndex((chat) => chat.id === otherUserId);
+        if (chatIndex === -1) {
+          fetchUsersAndChats(); // Refresh if it’s a new chat
+          return prevChats;
+        }
+        const updatedChats = [...prevChats];
+        const chat = updatedChats[chatIndex];
+        updatedChats[chatIndex] = {
+          ...chat,
+          lastMessage: newMessage.content,
+          timestamp: newMessage.timestamp,
+          unreadCount: isReceiver && !newMessage.read ? chat.unreadCount + 1 : chat.unreadCount,
+        };
+        return updatedChats.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      });
+    };
+  
+    const messagesChannel = supabase
+      .channel(`messages-user-${currentUser.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_id=eq.${currentUser.id}`, // Sent by current user
+        },
+        (payload) => handleMessageUpdate(payload, false)
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${currentUser.id}`, // Received by current user
+        },
+        (payload) => handleMessageUpdate(payload, true)
+      )
+      .subscribe();
   
     const usersChannel = supabase
       .channel('users-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users' },
-        () => {
-          fetchUsersAndChats();
-        }
+        () => fetchUsersAndChats()
       )
       .subscribe();
   
@@ -254,7 +226,6 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
 
       {/* Chat list sidebar */}
       <div className="h-full flex flex-col bg-gray-100 flex-1 relative">
-        {/* Top header */}
         <div className="p-4 flex justify-between items-center bg-white">
           <div className="flex items-center gap-2">
             {isMobileView && (
@@ -275,7 +246,6 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
           </div>
         </div>
 
-        {/* Filter section */}
         <div className="p-3 flex flex-wrap gap-2 bg-gray-50">
           <button className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <span>Custom Filter</span>
@@ -298,7 +268,6 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
           </button>
         </div>
 
-        {/* Search input */}
         {showSearch && (
           <div className="p-2 bg-white">
             <div className="flex items-center bg-gray-100 rounded-md px-3 py-2">
@@ -321,9 +290,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
           </div>
         )}
 
-        {/* Chat list wrapper with button */}
         <div className="flex-1 relative">
-          {/* Chat list */}
           <div className="h-full overflow-y-auto">
             {filteredChats.length > 0 ? (
               filteredChats.map((chat) => (
@@ -340,8 +307,6 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
               </div>
             )}
           </div>
-
-          {/* Floating action button */}
           <button 
             className="absolute bottom-4 right-4 bg-green-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
           >
@@ -349,7 +314,6 @@ export default function Sidebar({ selectedChatId, onSelectChat, currentUser }: S
           </button>
         </div>
 
-        {/* User profile */}
         <div className="p-3 flex justify-between items-center bg-white">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
